@@ -1,8 +1,16 @@
 # SSH 및 sudo 관련 문제
 <img src="image/1.png">   
 
-## 1. 사용자를 지정하지않고 로그인할 경우 어떤 사용자로 로그인되는가?
-아마 root?
+## 1. 사용자를 지정하지않고 로그인할 경우 어떤 사용자로 로그인되는가?   
+사용자를 지정하지 않는다는 것은 ssh 192.168.200.100 # 이런식으로 접속할 때...
+아마 root?라는 이야기는 틀림   
+지금 시스템을 사용하고있는 지금 로그인된 사용자로 로그인 된다.   
+
+일반적으로는 사용자 계정을 지정해준다.   
+
+<img src="image/20210726101334.png">   
+
+위 사진처럼 ssh 접속을 시도할 때 SHA256 값은 **서버**의 공개키 지문에 해당하는 해시값이다.
 ## 2. ssh keypair 생성 방법
 SSH 클라이언트에서 ssh-keygen 명령어로 생성   
 
@@ -42,7 +50,7 @@ ssh-copy-id 명령어를 통해 공개키를 서버로 보냈을 것이다.
 
 
 ## 5. sudo 명령어를 사용할 수 있는 사용자는?
-보조그룹에 wheel 이 있는 사용자는 sudo 권한을 사용할 수 있다.    
+redhat 계열의 OS: 보조그룹에 wheel 이 있는 사용자는 sudo 권한을 사용할 수 있다.    
 
 /etc/sudoers 파일에 아래와같은 형식으로 추가하여 권한을 부여할 수도 있다
 
@@ -56,6 +64,15 @@ root    ALL=(ALL:ALL) ALL
 # Allow members of group sudo to execute any command
 %sudo   ALL=(ALL:ALL) ALL
 ```
+
+visudo 이용하면 syntax check 를 해준다.
+/etc/sudoers 뿐만 아니라 /etc/sudoers.d 에도 sudo 권한에 대한설정이 존재한다.    
+
+root ALL1=(ALL2) ALL3  # ALL:ALL 은 그냥 ALL이랑 같은 의미   
+ALL 1 : Host, ALL 2 : user, ALL 3: command    
+
+유저이름 호스트=(유저) 커맨드 의 형식으로 작성
+                
 ## 6. Passwordless Sudo 설정 방법?
 /etc/sudoers 파일에 맨 아래쪽에 아래와 같은 형식으로 내용을 추가하여준다.   
 
@@ -68,6 +85,11 @@ ex) user01 ALL=NOPASSWD: ALL # 와 같이 내용추가
 testuser1 ALL=NOPASSWD: /usr/sbin/useradd, /usr/sbin/userdel #특정 명령어에만 sudo를 패스워드없이 사용할 수도 있다.
 ```
 ## 7. ssh key passphrase를 매번 입력하지 않고 사용하는 방법은?
-/etc/ssh/sshd_config 파일을 수정하여준다.   
+~~/etc/ssh/sshd_config 파일을 수정하여준다.   
 PasswordAuthentication 부분을 찾아서 no로 설정을 바꿔준다.    
-만약 no로 설정하였다면 ssh-keygen 또한 실행이 안되므로 다시 yes로 바꿔주고 진행한다. 
+만약 no로 설정하였다면 ssh-keygen 또한 실행이 안되므로 다시 yes로 바꿔주고 진행한다~~~   
+다 틀림
+```
+ssh-agent bash # bash 쉘을 ssh-agent 로 사용하겠다
+ssh-add ~/.ssh/id_rsa # 명령어통해 passphrase 안물어보게 할 수 있다
+```
