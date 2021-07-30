@@ -1,0 +1,60 @@
+- name: Uninstall All WordPress Related File Package
+  hosts: 192.168.200.101
+  tasks:
+  - name: Remove Directory Wordpress In html directory
+    file:
+      path: /var/www/html/wordpress
+      state: absent
+  - name: Remove WordPress Zip file
+    file:
+      path: /home/devops/wordpress-4.8.2-ko_KR.zip
+      state: absent
+  - name: Remove Package php-mbstring
+    apt:
+      name: php-mbstring, php-gd, php-mysql, php, apache2
+      state: absent
+  - name: Service Apache2 Stop
+    service:
+      name: apache2
+      state: stopped
+  - name: Remove Apache2
+    apt:
+      name: apache2
+      state: absent
+      purge: yes
+  - name: Remove Dependencies-Apache2
+    apt:
+      autoremove: yes
+      purge: yes
+  - name: Remove apache configuration
+    file:
+      path: /etc/apache2
+      state: absent
+- name: Uninstall PyMySQL Databases Related packages
+  hosts: 192.168.200.102
+  tasks:
+  - name: Uninstall mysql-server
+    apt:
+      name: mysql-server
+      state: absent
+  - name: Uninstall mysql-server-8.0
+    apt:
+      name: mysql-server-8.0
+      state: absent
+      purge: yes
+      autoremove: yes
+  - name: Remove file related mysql
+    file:
+      path: /var/lib/mysql
+      state: absent
+  - name: Remove file /etc/mysql
+    file:
+      path: /etc/mysql
+      state: absent
+  - name: Remove package python3-pymysql
+    apt:
+      name: python3-pymysql
+      state: absent
+  - name: Autoremove unused Packages
+    apt:
+      autoremove: yes

@@ -1,0 +1,80 @@
+- name: Configure Mysql
+  hosts: 192.168.200.102
+  vars_files:
+    - vars/db_vars.yaml
+  tasks:
+  - name: Install python3-pymysql package
+    apt:
+      name: python3-pymysql, mysql-server
+  - name: Mysql root user config
+    mysql_user:
+      check_implicit_admin: yes
+      login_unix_socket: "{{ db_var['socket_path'] }}"
+      login_user: root
+      login_password: ''
+      name: root
+      password: "{{ db_var['db_user_root_pw'] }}"
+  - name: Mysql wordpress user create
+    mysql_user:
+      login_user: root
+      login_password: "{{ db_var['db_user_root_pw'] }}"
+      name: "{{ db_var['db_user_wp'] }}"
+      password: "{{ db_var['db_user_wp_pw'] }}"
+      host: 192.168.200.0/24
+      priv: "{{ db_var['db_user_wp'] }}.*:ALL,GRANT"
+  - name: Mysql database create
+    mysql_db:
+      login_user: root
+      login_password: "{{ db_var['db_user_root_pw'] }}"
+      name: "{{ db_var['db_name'] }}"
+  - name: Unset bind-address
+    lineinfile:
+      path: "{{ db_var['conf_path'] }}"
+      regexp: '^bind'
+      line: ''
+  - name: Unset mysqlx-bind-address
+    lineinfile:
+      path: "{{ db_var['conf_path'] }}"
+      regexp: '^mysqlx'
+      line: ''
+  - name: Mysql Service Restart
+    service:
+      name: mysql
+      state: restarted
+
+- name: Configure wordpress service
+  hosts: 192.168.200.101
+  vars_files:
+    - vars/wp_vars.yaml
+  tasks:
+  - name: Install Package apache2
+    apt:
+      name: apache2
+  - name: Install Package php
+    apt:
+      name: php, php-mysql, php-gd, php-mbstring
+  - name: Download wordpress
+    get_url:
+      url: https://ko.wordpress.org/wordpress-4.8.2-ko_KR.zip
+      dest: /home/devops/wordpress-4.8.2-ko_KR.zip
+  - name: Install Package Unzip
+    apt:
+      name: unzip
+  - name: Unzip wordpress file
+    command: unzip /home/devops/wordpress-4.8.2-ko_KR.zip -d /var/www/html/
+  - name: Copy & Setting wp-config.ph with template
+    template:
+      src: jinja/wp-config.php.j2
+      dest: /var/www/html/wordpress/wp-config.php
+  - name: Change Service port
+    template:
+      src: jinja/ports.j2
+      dest: /etc/apache2/ports.conf
+      force: yes
+    notify:
+    - Restart apache2
+  handlers:
+    - name: Restart apache2
+      service:
+        name: apache2
+        state: restarted
