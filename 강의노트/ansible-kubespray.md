@@ -240,4 +240,10 @@ $ tree .
 4. meta : role의 메타정보 위치, 의존성 정보들이 기입되어있어야한다. 
 5. **task** : role의 핵심폴더, role이 실제로 동작할 내용포함
 6. templates : jinja2 템플릿 변수들 
-7. vars : role에서 사용할 변수들 목록
+7. vars : role에서 사용할 변수들 목록        
+
+
+다른 버전의 kubespray 설치
+```
+git clone -b release-2.15 https://github.com/kubernetes-sigs/kubespray.git
+```
